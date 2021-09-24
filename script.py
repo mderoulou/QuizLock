@@ -83,6 +83,7 @@ keys = {pygame.K_a : "a",
 
 class Overlay:
     def __init__(self):
+        time.sleep(1)
         self.question = questions[CURRENT_DAY][random.randint(0, len(questions[CURRENT_DAY])-1)]
         self.questionImg = pygame.image.load("questions/" + self.question[0])
         self.response = self.question[1]
