@@ -7,10 +7,18 @@ from Xlib import display, X
 import random
 import time
 
-questions = [
-    ["q0.png", "4"],
-    ["q1.png", "8"],
-]
+CURRENT_DAY = 0
+
+questions = { 3:
+    [
+        ["day03-0.png", "write"],
+        ["day03-1.png", "main"],
+    ],
+    4 : [
+        
+    ]
+}
+
 
 def signal_handler(sig, frame):
     print("Answer the question, don't try to avoid it!")
@@ -75,21 +83,18 @@ keys = {pygame.K_a : "a",
 
 class Overlay:
     def __init__(self):
-        self.question = questions[random.randint(0, len(questions)-1)]
+        self.question = questions[CURRENT_DAY][random.randint(0, len(questions[CURRENT_DAY])-1)]
         self.questionImg = pygame.image.load("questions/" + self.question[0])
         self.response = self.question[1]
-        
-        
+        self.start = 0
         print(self.question)
         self.width, self.height = 1920, 1080
         dsp = display.Display()
         root = dsp.screen().root
         raw = root.get_image(0, 0, self.width, self.height, X.ZPixmap, 0xffffffff)
         self.backGround = pygame.image.fromstring(raw.data, (self.width, self.height), "RGBA")
-        os.environ['SDL_VIDEO_WINDOW_POS'] = '%i,%i' % (-100, -100)
+        os.environ['SDL_VIDEO_WINDOW_POS'] = '%i,%i' % (0, 0)
         os.environ['SDL_VIDEO_CENTERED'] = '0'
-        pygame.image.save(self.backGround, "img.jpg")
-        self.backGround = pygame.image.load("img.jpg")
         imgdata = pygame.surfarray.array3d(self.backGround)
         imgdata = imgdata[:,:,::-1]
         self.backGround = pygame.surfarray.make_surface(imgdata)
@@ -103,12 +108,12 @@ class Overlay:
         self.font = pygame.font.SysFont(None, 40)
         
     def checkAnswer(self):
-        if (self.text == self.response):
+        if (self.text.lstrip() == self.response):
             self.screen.fill((0, 0, 0, 0))
             self.screen.blit(self.backGround, (0, 0))
             fontText = self.font.render(self.text, True, (140, 124, 255))
             self.screen.blit(fontText, (self.width/2 - fontText.get_size()[0]/2, self.height*3/4-fontText.get_size()[1]/2))
-            self.text = "good Job"
+            self.text = "Good Job"
             
             fontText = self.font.render(self.text, True, (255, 255, 255))   
             self.screen.blit(fontText, (self.width/2 - fontText.get_size()[0]/2, self.height*2.5/4-fontText.get_size()[1]/2))
@@ -122,8 +127,14 @@ class Overlay:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pass
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if not self.start:
+                    self.start = time.time()
+            elif event.type == pygame.KEYDOWN:
                 if event.key in keys.keys():
+                    if not self.start:
+                        self.start = time.time()
+                        break
                     if keys[event.key] == '\r':
                         if len(self.text) == 0:
                             continue
@@ -141,11 +152,30 @@ class Overlay:
             self.handleEvent()
             self.screen.fill((0, 0, 0, 0))
             self.screen.blit(self.backGround, (0, 0))
-            fontText = self.font.render(self.text, True, (140, 124, 255))
-            self.screen.blit(fontText, (self.width/2 - fontText.get_size()[0]/2, self.height*3/4-fontText.get_size()[1]/2))
-            self.screen.blit(self.questionImg, (self.width/2 - self.questionImg.get_size()[0]/2, self.height/2 - self.questionImg.get_size()[1]/2))
+            
+            if self.start:
+                #draw Informations
+                lockText = self.font.render("A epitech, il faut lock son PC !", True, (255, 0, 0))
+                pos = (self.width/2 - lockText.get_size()[0]/2, self.height*1/4-lockText.get_size()[1]/2)
+                pygame.draw.rect(self.screen, (0, 0, 0), (pos[0]-5, pos[1]-5, lockText.get_size()[0]+10, lockText.get_size()[1]+10))
+                self.screen.blit(lockText, pos)
+
+                #draw text input
+                fontText = self.font.render(self.text, True, (255, 255, 255))
+                pos = (self.width/2 - fontText.get_size()[0]/2, self.height*3/4-fontText.get_size()[1]/2)
+                pygame.draw.rect(self.screen, (0, 0, 0), (pos[0]-5, pos[1]-5, fontText.get_size()[0]+10, fontText.get_size()[1]+10))
+                self.screen.blit(fontText, pos)
+                
+                #draw Question
+                pos = (self.width/2 - self.questionImg.get_size()[0]/2, self.height/2 - self.questionImg.get_size()[1]/2)
+                pygame.draw.rect(self.screen, (255, 0, 0), (pos[0]-5, pos[1]-5, self.questionImg.get_size()[0]+10, self.questionImg.get_size()[1]+10))
+                self.screen.blit(self.questionImg, pos)
+
             pygame.display.flip()
             pygame.time.Clock().tick(60)
+
+            if self.start and time.time() - self.start >= 60*15:
+                sys.exit(0)
             #except:
             #    pass
             
