@@ -111,14 +111,20 @@ class Overlay:
         if (self.text.lstrip() == self.response):
             self.screen.fill((0, 0, 0, 0))
             self.screen.blit(self.backGround, (0, 0))
-            fontText = self.font.render(self.text, True, (140, 124, 255))
-            self.screen.blit(fontText, (self.width/2 - fontText.get_size()[0]/2, self.height*3/4-fontText.get_size()[1]/2))
-            self.text = "Good Job"
             
+            #draw text
+            fontText = self.font.render(self.text, True, (0, 255, 0))
+            self.screen.blit(fontText, (self.width/2 - fontText.get_size()[0]/2, self.height*3/4-fontText.get_size()[1]/2))
+            
+
+            #draw question
+            self.screen.blit(self.questionImg, (self.width/2 - self.questionImg.get_size()[0]/2, self.height/2 - self.questionImg.get_size()[1]/2))
+
+            #draw good job
+            self.text = "Good Job"
             fontText = self.font.render(self.text, True, (255, 255, 255))   
             self.screen.blit(fontText, (self.width/2 - fontText.get_size()[0]/2, self.height*2.5/4-fontText.get_size()[1]/2))
             
-            self.screen.blit(self.questionImg, (self.width/2 - self.questionImg.get_size()[0]/2, self.height/2 - self.questionImg.get_size()[1]/2))
             pygame.display.flip()
             time.sleep(1)
             sys.exit(0)
