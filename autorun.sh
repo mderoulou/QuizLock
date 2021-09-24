@@ -1,3 +1,3 @@
 #!/bin/bash
 pip3 install pygame python-xlib &> /dev/null
-python3 QuizLock/script.py &> /dev/null
+(cd QuizLock && python3 script.py) || python3 script.py
