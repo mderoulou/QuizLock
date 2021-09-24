@@ -3,6 +3,7 @@ import signal
 import sys
 import pygame
 import os
+from Xlib import display, X
 
 def signal_handler(sig, frame):
     print("Answer the question, don't try to avoid it!")
@@ -40,16 +41,30 @@ keys = {pygame.K_a : "a",
         pygame.K_x : "x",
         pygame.K_y : "y",
         pygame.K_z : "z",
+        pygame.K_SPACE : " ",
         pygame.K_BACKSPACE : "\r",
-        pygame.K_KP_ENTER : "\n"
 }
 
 
 class Overlay:
     def __init__(self):
+        W,H = 1920,1080
+        dsp = display.Display()
+        root = dsp.screen().root
+        raw = root.get_image(0, 0, W,H, X.ZPixmap, 0xffffffff)
+        self.backGround = pygame.image.fromstring(raw.data, (W, H), "RGBA")
+        os.environ['SDL_VIDEO_WINDOW_POS'] = '%i,%i' % (-100, -100)
+        os.environ['SDL_VIDEO_CENTERED'] = '0'
+        pygame.image.save(self.backGround, "img.jpg")
+        self.backGround = pygame.image.load("img.jpg")
+
+
         pygame.init()
-        # self.screen = pygame.display.set_mode([1920, 1080], pygame.FULLSCREEN)
-        self.screen = pygame.display.set_mode([800, 600], pygame.NOFRAME)
+        curRez = (pygame.display.Info().current_w, pygame.display.Info().current_h)
+        self.screen = pygame.display.set_mode((W, H), pygame.SCALED + pygame.NOFRAME + pygame.FULLSCREEN, 32, vsync=1)
+        #pygame.display.toggle_fullscreen()
+        pygame.display.flip()
+
         self.text = ""
         self.response = "toto"
         #self.screen = pygame.display.set_mode([800,600])
@@ -68,32 +83,26 @@ class Overlay:
                 if event.key in keys.keys():
                     if len(self.text) > 0 and keys[event.key] == '\r':
                         self.text = self.text[:-1]
+                        self.checkAnswer()
                     elif len(self.text) > 0 and keys[event.key] == '\n':
                         self.checkAnswer()
                     else:
                         self.text += keys[event.key]
+                        self.checkAnswer()
 
     def run(self):
         while (self.running):
             #try:
             self.handleEvent()
-            self.screen.fill(TRANSPARENT)
+            self.screen.fill((0, 0, 0, 0))
+            self.screen.blit(self.backGround, (0, 0))
             self.screen.blit(self.font.render(self.text, True, (140, 124, 255)), (20, 20))
-            # pygame.draw.circle(self.screen, (0, 0, 255), (250, 250), 75)
+            #pygame.draw.circle(self.screen, (0, 0, 255), (250, 250), 75)
             pygame.display.flip()
             pygame.time.Clock().tick(60)
             #except:
             #    pass
             
-
-from Xlib import display, X
-
-W,H = 200,200
-dsp = display.Display()
-root = dsp.screen().root
-raw = root.get_image(0, 0, W,H, X.ZPixmap, 0xffffffff)
-
-print(raw)
 
 if __name__ == "__main__":
     Overlay().run()
