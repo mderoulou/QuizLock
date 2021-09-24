@@ -7,7 +7,7 @@ from Xlib import display, X
 import random
 import time
 
-CURRENT_DAY = 0
+CURRENT_DAY = 3
 
 questions = { 3:
     [
@@ -87,7 +87,6 @@ class Overlay:
         self.questionImg = pygame.image.load("questions/" + self.question[0])
         self.response = self.question[1]
         self.start = 0
-        print(self.question)
         self.width, self.height = 1920, 1080
         dsp = display.Display()
         root = dsp.screen().root
