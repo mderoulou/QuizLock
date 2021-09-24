@@ -14,76 +14,86 @@ signal.signal(signal.SIGCONT, signal_handler)
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTSTP, signal_handler)
 
-print('Press Ctrl+C')
+keys = {pygame.K_a : "a",
+        pygame.K_b : "b",
+        pygame.K_c : "c",
+        pygame.K_d : "d",
+        pygame.K_e : "e",
+        pygame.K_f : "f",
+        pygame.K_g : "g",
+        pygame.K_h : "h",
+        pygame.K_i : "i",
+        pygame.K_j : "j",
+        pygame.K_k : "k",
+        pygame.K_l : "l",
+        pygame.K_m : "m",
+        pygame.K_n : "n",
+        pygame.K_o : "o",
+        pygame.K_p : "p",
+        pygame.K_q : "q",
+        pygame.K_r : "r",
+        pygame.K_s : "s",
+        pygame.K_t : "t",
+        pygame.K_u : "u",
+        pygame.K_v : "v",
+        pygame.K_w : "w",
+        pygame.K_x : "x",
+        pygame.K_y : "y",
+        pygame.K_z : "z",
+        pygame.K_BACKSPACE : "\r",
+        pygame.K_KP_ENTER : "\n"
+}
 
-"""class Overlay: # ce truc marchera pas sur linux
-    def __init__(self, WindowTitle):
-        self.figuresToDraw = []
-        print("init overlay...", end="", flush=True)
-        #Get Target Window And Rect
-        self.targetHwnd = win32gui.FindWindow(None, WindowTitle)
-        if not self.targetHwnd:
-            sys.exit(f"Window Not Found: {WindowTitle}")
-        self.targetRect = self.GetTargetWindowRect()
-        print("done")
-
-        #Init Pygame
-        print("init pygame...", end="", flush=True)
-        os.environ['SDL_VIDEO_WINDOW_POS'] = str(self.targetRect.x) + "," + str(self.targetRect.y)
-        #pygame.init()
-        print("here")
-        self.screen = pygame.display.set_mode((self.targetRect.w, self.targetRect.h), pygame.NOFRAME)
-        self.hWnd = pygame.display.get_wm_info()['window']
-        win32gui.SetWindowLong(self.hWnd, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(self.hWnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
-        win32gui.SetLayeredWindowAttributes(self.hWnd, win32api.RGB(*TRANSPARENT), 0, win32con.LWA_COLORKEY)
-        win32gui.BringWindowToTop(self.hWnd)
-        win32gui.SetWindowPos(self.hWnd, TOPMOST, 0, 0, 0, 0, NOMOVE | NOSIZE)
-        self.window = True
-        print("done")
-
-
-    def GetTargetWindowRect(self):
-        rect = win32gui.GetWindowRect(self.targetHwnd)
-        ret = Vector(rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1])
-        return ret
-
-    def handle(self):
-        win32gui.SetWindowPos(self.hWnd, TOPMOST, self.targetRect.x, self.targetRect.y, 0, 0, NOMOVE | NOSIZE)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.window = False
-        if self.targetRect != self.GetTargetWindowRect():
-            self.targetRect = self.GetTargetWindowRect()
-            win32gui.SetWindowPos(self.hWnd, TOPMOST, 0, 0, 0, 0, NOMOVE | NOSIZE)
-            win32gui.MoveWindow(self.hWnd, self.targetRect.x, self.targetRect.y, self.targetRect.w, self.targetRect.h, True)
-
-        pygame.display.update()
-        pygame.time.Clock().tick(60)
-        self.screen.fill(TRANSPARENT)"""
-# Mais y'aura moy d'en faire un equivalente ?
-# aucune idée
-# sinnon on doit pouvoir faire un truc qui se met en full screen et force le focus
 
 class Overlay:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode([1920, 1080], pygame.FULLSCREEN)
+        # self.screen = pygame.display.set_mode([1920, 1080], pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode([800, 600], pygame.NOFRAME)
+        self.text = ""
+        self.response = "toto"
+        #self.screen = pygame.display.set_mode([800,600])
         self.running = True
+        self.font = pygame.font.SysFont(None, 24)
+        
+    def checkAnswer(self):
+        if (self.text == self.response):
+            sys.exit(0)
     
     def handleEvent(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pass
+            if event.type == pygame.KEYDOWN:
+                if event.key in keys.keys():
+                    if len(self.text) > 0 and keys[event.key] == '\r':
+                        self.text = self.text[:-1]
+                    elif len(self.text) > 0 and keys[event.key] == '\n':
+                        self.checkAnswer()
+                    else:
+                        self.text += keys[event.key]
 
     def run(self):
         while (self.running):
-            try:
-                self.handleEvent()
-                pygame.draw.circle(self.screen, (0, 0, 255), (250, 250), 75)
-                pygame.display.flip()
-            except:
-                pass
+            #try:
+            self.handleEvent()
+            self.screen.fill(TRANSPARENT)
+            self.screen.blit(self.font.render(self.text, True, (140, 124, 255)), (20, 20))
+            # pygame.draw.circle(self.screen, (0, 0, 255), (250, 250), 75)
+            pygame.display.flip()
+            pygame.time.Clock().tick(60)
+            #except:
+            #    pass
             
+
+from Xlib import display, X
+
+W,H = 200,200
+dsp = display.Display()
+root = dsp.screen().root
+raw = root.get_image(0, 0, W,H, X.ZPixmap, 0xffffffff)
+
+print(raw)
 
 if __name__ == "__main__":
     Overlay().run()
