@@ -88,15 +88,19 @@ class Overlay:
         self.response = self.question[1]
         self.start = 0
         self.width, self.height = 1920, 1080
-        dsp = display.Display()
-        root = dsp.screen().root
-        raw = root.get_image(0, 0, self.width, self.height, X.ZPixmap, 0xffffffff)
-        self.backGround = pygame.image.fromstring(raw.data, (self.width, self.height), "RGBA")
-        os.environ['SDL_VIDEO_WINDOW_POS'] = '%i,%i' % (0, 0)
-        os.environ['SDL_VIDEO_CENTERED'] = '0'
-        imgdata = pygame.surfarray.array3d(self.backGround)
-        imgdata = imgdata[:,:,::-1]
-        self.backGround = pygame.surfarray.make_surface(imgdata)
+        self.backGround = None
+        try:
+            dsp = display.Display()
+            root = dsp.screen().root
+            raw = root.get_image(0, 0, self.width, self.height, X.ZPixmap, 0xffffffff)
+            self.backGround = pygame.image.fromstring(raw.data, (self.width, self.height), "RGBA")
+            os.environ['SDL_VIDEO_WINDOW_POS'] = '%i,%i' % (0, 0)
+            os.environ['SDL_VIDEO_CENTERED'] = '0'
+            imgdata = pygame.surfarray.array3d(self.backGround)
+            imgdata = imgdata[:,:,::-1]
+            self.backGround = pygame.surfarray.make_surface(imgdata)
+        except:
+            print("Unable to take screenshot of desktop")
 
         pygame.init()
         curRez = (pygame.display.Info().current_w, pygame.display.Info().current_h)
@@ -109,7 +113,8 @@ class Overlay:
     def checkAnswer(self):
         if (self.text.lstrip() == self.response):
             self.screen.fill((0, 0, 0, 0))
-            self.screen.blit(self.backGround, (0, 0))
+            if (self.backGround):
+                self.screen.blit(self.backGround, (0, 0))
             fontText = self.font.render(self.text, True, (140, 124, 255))
             self.screen.blit(fontText, (self.width/2 - fontText.get_size()[0]/2, self.height*3/4-fontText.get_size()[1]/2))
             self.text = "Good Job"
@@ -150,12 +155,25 @@ class Overlay:
             #try:
             self.handleEvent()
             self.screen.fill((0, 0, 0, 0))
-            self.screen.blit(self.backGround, (0, 0))
+            if (self.backGround):
+                self.screen.blit(self.backGround, (0, 0))
             
             if self.start:
                 #draw Informations
                 lockText = self.font.render("A epitech, il faut lock son PC !", True, (255, 0, 0))
                 pos = (self.width/2 - lockText.get_size()[0]/2, self.height*1/4-lockText.get_size()[1]/2)
+                pygame.draw.rect(self.screen, (0, 0, 0), (pos[0]-5, pos[1]-5, lockText.get_size()[0]+10, lockText.get_size()[1]+10))
+                self.screen.blit(lockText, pos)
+
+                #draw Timer
+                lockText = self.font.render(f"Ton pc sera unlock dans {60*15 - (time.time() - self.start):.02f} secondes", True, (255, 0, 0))
+                pos = (0, 0)
+                pygame.draw.rect(self.screen, (0, 0, 0), (pos[0]-5, pos[1]-5, lockText.get_size()[0]+10, lockText.get_size()[1]+10))
+                self.screen.blit(lockText, pos)
+
+                #draw instructions
+                lockText = self.font.render(f"Trouve la solution à ce problème :", True, (255, 0, 0))
+                pos = (self.width/2 - lockText.get_size()[0]/2, self.height*3/10-lockText.get_size()[1]/2)
                 pygame.draw.rect(self.screen, (0, 0, 0), (pos[0]-5, pos[1]-5, lockText.get_size()[0]+10, lockText.get_size()[1]+10))
                 self.screen.blit(lockText, pos)
 
